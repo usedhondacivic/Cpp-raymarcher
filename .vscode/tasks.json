@@ -1,0 +1,40 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build with Mingw",
+            "type": "shell",
+            "command": "g++",
+            "args": [
+                "-g",
+                "Main.cpp",
+                "-I../mingw_dev_lib/include",
+                "-L../mingw_dev_lib/lib",
+                "-lmingw32",
+                "-lSDL2main",
+                "-lSDL2",
+                "-lSDL2_image",
+                "-o",
+                "Main",
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Build with Clang",
+            "type": "shell",
+            "command": "clang++",
+            "args": [
+                "-std=c++17",
+                "-stdlib=libc++",
+                "Main.cpp",
+                "-o",
+                "Main.out",
+                "--debug"
+            ],
+            "group": "build"
+        }
+    ]
+}
