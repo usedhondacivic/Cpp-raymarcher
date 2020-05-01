@@ -18,11 +18,20 @@
             "intelliSenseMode": "gcc-x64",
             "browse": {
                 "path": [
-                    "${workspaceFolder}"
+                    "${workspaceFolder}",
+                    "D:/Projects/C++/mingw_dev_lib/include",
+                    "D:/Projects/C++/mingw_dev_lib/lib"
                 ],
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""
-            }
+            },
+            "compilerArgs": [
+                "-ID:/Projects/C++/mingw_dev_lib/include",
+                "-LD:/Projects/C++/mingw_dev_lib/lib",
+                "-lmingw32",
+                "-lglfw3dll",
+                "-lOpenGL32"
+            ]
         },
         {
             "name": "macOS",
