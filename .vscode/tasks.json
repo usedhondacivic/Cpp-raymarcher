@@ -7,15 +7,15 @@
             "command": "g++",
             "args": [
                 "-g",
-                "Main.cpp",
-                "glad.c",
+                "source/Main.cpp",
+                "source/glad.c",
                 "-I../mingw_dev_lib/include",
                 "-L../mingw_dev_lib/lib",
                 "-lmingw32",
                 "-lglfw3dll",
                 "-lOpenGL32",
                 "-o",
-                "Main",
+                "binaries/Main",
             ],
             "group": {
                 "kind": "build",

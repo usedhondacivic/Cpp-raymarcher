@@ -5,7 +5,7 @@
              "name": "(gdb) Launch",
              "type": "cppdbg",
              "request": "launch",
-             "program": "${workspaceFolder}/Main.exe",
+             "program": "${workspaceFolder}/binaries/Main.exe",
              "args": [],
              "stopAtEntry": false,
              "cwd": "${workspaceFolder}",

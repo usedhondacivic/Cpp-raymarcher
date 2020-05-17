@@ -5,6 +5,8 @@ in vec4 gl_FragCoord;
 
 uniform float iTime; 
 uniform vec2 iResolution;
+uniform vec3 position;
+uniform vec3 lookDir;
   
 /**
  * Part 2 Challenges
@@ -20,10 +22,15 @@ const float MAX_DIST = 100.0;
 const float EPSILON = 0.0001;
 
 /**
- * Signed distance function for a sphere centered at the origin with radius 1.0;
+ * Signed distance function for a sphere centered at the origin;
  */
-float sphereSDF(vec3 samplePoint) {
-    return length(samplePoint) - 1.0;
+float sphereSDF(vec3 p, float radius) {
+    return length(p) - radius;
+}
+
+float boxSDF(vec3 p, vec3 size) {
+  vec3 q = abs(p) - size;
+  return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
 }
 
 /**
@@ -34,7 +41,8 @@ float sphereSDF(vec3 samplePoint) {
  * negative indicating inside.
  */
 float sceneSDF(vec3 samplePoint) {
-    return sphereSDF(samplePoint);
+    //return sphereSDF(samplePoint, 1);
+    return boxSDF(samplePoint, vec3(1, 1, 1));
 }
 
 /**
@@ -163,21 +171,45 @@ vec3 phongIllumination(vec3 k_a, vec3 k_d, vec3 k_s, float alpha, vec3 p, vec3 e
     return color;
 }
 
+/**
+ * Return a transform matrix that will transform a ray from view space
+ * to world coordinates, given the eye point, the camera target, and an up vector.
+ *
+ * This assumes that the center of the camera is aligned with the negative z axis in
+ * view space when calculating the ray marching direction. See rayDirection.
+ */
+mat4 viewMatrix(vec3 eye, vec3 center, vec3 up) {
+    // Based on gluLookAt man page
+    vec3 f = normalize(center - eye);
+    vec3 s = normalize(cross(f, up));
+    vec3 u = cross(s, f);
+    return mat4(
+        vec4(s, 0.0),
+        vec4(u, 0.0),
+        vec4(-f, 0.0),
+        vec4(0.0, 0.0, 0.0, 1)
+    );
+}
 
 void main()
 {
-	vec3 dir = rayDirection(45.0, iResolution.xy, gl_FragCoord.xy);
-    vec3 eye = vec3(0.0, 0.0, 5.0);
-    float dist = shortestDistanceToSurface(eye, dir, MIN_DIST, MAX_DIST);
+	vec3 viewDir = rayDirection(45.0, iResolution.xy, gl_FragCoord.xy);
+    vec3 eye = position;
+
+    mat4 viewToWorld = viewMatrix(eye, vec3(0.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0));
+
+    vec3 worldDir = (viewToWorld * vec4(viewDir, 0.0)).xyz;
+
+    float dist = shortestDistanceToSurface(eye, worldDir, MIN_DIST, MAX_DIST);
     
     if (dist > MAX_DIST - EPSILON) {
         // Didn't hit anything
-        FragColor = vec4(0.0, 0.0, 0.0, 0.0);
+        FragColor = vec4(10.0/dist, 10.0/dist, 10.0/dist, 1.0);
 		return;
     }
     
     // The closest point on the surface to the eyepoint along the view ray
-    vec3 p = eye + dist * dir;
+    vec3 p = eye + dist * worldDir;
     
     vec3 K_a = vec3(0.2, 0.2, 0.2);
     vec3 K_d = vec3(0.7, 0.2, 0.2);
@@ -186,5 +218,5 @@ void main()
     
     vec3 color = phongIllumination(K_a, K_d, K_s, shininess, p, eye);
     
-    FragColor = vec4(color, 1.0);
+    FragColor = vec4(0.0, 0.0, 0.0, 1.0);
 }

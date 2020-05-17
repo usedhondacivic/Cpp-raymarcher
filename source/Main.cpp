@@ -2,7 +2,22 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+#include <map>
+
 #include "Shader.h"
+
+std::map<int, bool> keys ={
+    {GLFW_KEY_W, false},
+    {GLFW_KEY_S, false},
+    {GLFW_KEY_A, false},
+    {GLFW_KEY_D, false},
+    {GLFW_KEY_Q, false},
+    {GLFW_KEY_E, false},
+    {GLFW_KEY_UP, false},
+    {GLFW_KEY_DOWN, false},
+    {GLFW_KEY_LEFT, false},
+    {GLFW_KEY_RIGHT, false}
+};
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height){
     glViewport(0, 0, width, height);
@@ -11,6 +26,22 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height){
 void processInput(GLFWwindow *window){
     if(glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+}
+
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods){
+    if(action == GLFW_PRESS){
+        if(keys.find(key) != keys.end()){
+            keys.at(key) = true;
+            std::cout << "Pressed keycode: " << key << std::endl;
+        }
+    }
+
+    if(action == GLFW_RELEASE){
+        if(keys.find(key) != keys.end()){
+            keys.at(key) = false;
+            std::cout << "Released keycode: " << key << std::endl;
+        }
+    }
 }
 
 int main(int argc, char* args[]){
@@ -35,7 +66,9 @@ int main(int argc, char* args[]){
     glViewport(0, 0, 800, 600);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    Shader myShader("vertex.glsl", "fragment.glsl");
+    glfwSetKeyCallback(window, keyCallback);
+
+    Shader myShader("shaders/vertex.glsl", "shaders/fragment.glsl");
     
     float vertices[] = {
         -1.0f, -1.0f, 0.0f,
@@ -61,8 +94,15 @@ int main(int argc, char* args[]){
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
+    float position[] = {8.0, 5.0, 7.0};
+    float cameraRotation[] = {0.0, 0.0, 0.0};
+    float speed = 1.0 / 60.0;
+    float rotationSpeed = 1.0 / 60.0;
+
     while(!glfwWindowShouldClose(window)){
         processInput(window);
+
+        
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -76,7 +116,8 @@ int main(int argc, char* args[]){
         glGetIntegerv(GL_VIEWPORT, m_viewport);
         GLint resolution[] = {m_viewport[2], m_viewport[3]};
         myShader.setFloat("iTime", time);
-        myShader.set2i("iResolution", resolution[0], resolution[1]);
+        myShader.set2f("iResolution", resolution[0], resolution[1]);
+        myShader.set3f("position", position[0], position[1], position[2]);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
