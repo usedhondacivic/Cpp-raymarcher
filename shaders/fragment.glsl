@@ -21,6 +21,14 @@ const float MIN_DIST = 0.0;
 const float MAX_DIST = 100.0;
 const float EPSILON = 0.0001;
 
+struct rayInfo
+{
+    float shortestDistance;
+    bool hit;
+    int count;
+    float minRadius;
+};
+
 /**
  * Signed distance function for a sphere centered at the origin;
  */
@@ -68,6 +76,23 @@ float shortestDistanceToSurface(vec3 eye, vec3 marchingDirection, float start, f
         }
     }
     return end;
+}
+
+rayInfo getRayInfo(vec3 eye, vec3 marchingDirection, float start, float end) {
+    float depth = start;
+    float minRadius = 10000;
+    for (int i = 0; i < MAX_MARCHING_STEPS; i++) {
+        float dist = sceneSDF(eye + depth * marchingDirection);
+        if(dist < minRadius){minRadius = dist;}
+        if (dist < EPSILON) {
+			return rayInfo(depth, true, i, minRadius);
+        }
+        depth += dist;
+        if (depth >= end) {
+            return rayInfo(end, false, i, minRadius);
+        }
+    }
+    return rayInfo(end, false, MAX_MARCHING_STEPS, minRadius);
 }
             
 
@@ -200,11 +225,16 @@ void main()
 
     vec3 worldDir = (viewToWorld * vec4(viewDir, 0.0)).xyz;
 
-    float dist = shortestDistanceToSurface(eye, worldDir, MIN_DIST, MAX_DIST);
+    //float dist = shortestDistanceToSurface(eye, worldDir, MIN_DIST, MAX_DIST);
+
+    rayInfo info = getRayInfo(eye, worldDir, MIN_DIST, MAX_DIST);
+    float dist = info.shortestDistance;
+    int count = info.count;
+    float minRadius = info.minRadius;
     
     if (dist > MAX_DIST - EPSILON) {
         // Didn't hit anything
-        FragColor = vec4(10.0/dist, 10.0/dist, 10.0/dist, 1.0);
+        FragColor = vec4(0.1/sqrt(minRadius), 0.1/sqrt(minRadius), 0.1/sqrt(minRadius), 1.0);
 		return;
     }
     
@@ -218,5 +248,6 @@ void main()
     
     vec3 color = phongIllumination(K_a, K_d, K_s, shininess, p, eye);
     
-    FragColor = vec4(0.0, 0.0, 0.0, 1.0);
+    
+    FragColor = vec4(count/50.0, count/100.0, count/10.0, 1.0);
 }
